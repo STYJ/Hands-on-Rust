@@ -38,6 +38,24 @@ impl Map {
             }
         }
     }
+
+    pub fn in_bounds(&self, point: Point) -> bool {
+        // checks if the player is within the boundary of the map
+        point.x >= 0 && point.x < SCREEN_WIDTH && point.y >= 0 && point.y < SCREEN_HEIGHT
+    }
+
+    pub fn can_enter_tile(&self, point: Point) -> bool {
+        // checks if adventurer is within the boundary of the map and tile is a floor
+        self.in_bounds(point) && self.tiles[map_idx(point.y, point.y)] == TileType::Floor
+    }
+
+    pub fn try_idx(&self, point: Point) -> Option<usize> {
+        if !self.in_bounds(point) {
+            None
+        } else {
+            Some(map_idx(point.x, point.y))
+        }
+    }
 }
 
 // Transforming (x,y) into a single index is known as striding

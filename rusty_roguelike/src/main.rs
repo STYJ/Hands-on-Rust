@@ -1,4 +1,5 @@
 mod map; // import the map module, use is for redeclaring path (for convenience)
+mod player;
 
 // declare a "local" module called prelude, since this is neighbours w/ main, you don't have to import it again
 // In this prelude module, you are re-exporting some stuff like bracket_lib::prelude::*
@@ -10,29 +11,40 @@ mod prelude {
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
     pub use crate::map::*;
+    pub use crate::player::*;
 }
 
 use prelude::*;
 
 struct State {
     map: Map,
+    player: Player,
 }
 
 impl State {
     fn new() -> Self {
-        Self { map: Map::new() }
+        Self {
+            map: Map::new(),
+            player: Player::new(Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)),
+        }
     }
 }
 
-impl GameState for State { // Remember you need to implement the GameState trait so bracket-lib knows where to find the tick function
+impl GameState for State {
+    // Remember you need to implement the GameState trait so bracket-lib knows where to find the tick function
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
+        self.player.update(ctx, &self.map);
         self.map.render(ctx);
+        self.player.render(ctx);
     }
 }
 
 fn main() -> BError {
-    let context = BTermBuilder::simple80x50().with_title("Rusty Roguelike").with_fps_cap(30.0).build()?;
+    let context = BTermBuilder::simple80x50()
+        .with_title("Rusty Roguelike")
+        .with_fps_cap(30.0)
+        .build()?;
 
     main_loop(context, State::new()) // run the game!
 }
