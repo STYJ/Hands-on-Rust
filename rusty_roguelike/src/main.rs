@@ -1,4 +1,5 @@
 mod map; // import the map module, use is for redeclaring path (for convenience)
+mod map_builder;
 mod player;
 
 // declare a "local" module called prelude, since this is neighbours w/ main, you don't have to import it again
@@ -11,6 +12,7 @@ mod prelude {
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
     pub use crate::map::*;
+    pub use crate::map_builder::*;
     pub use crate::player::*;
 }
 
