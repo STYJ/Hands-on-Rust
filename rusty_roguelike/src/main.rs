@@ -39,6 +39,7 @@ impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
         self.player.update(ctx, &self.map);
+        // render map then player so that the player appears ontop of map.
         self.map.render(ctx);
         self.player.render(ctx);
     }
