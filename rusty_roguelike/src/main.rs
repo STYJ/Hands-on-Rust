@@ -1,7 +1,8 @@
 mod map; // import the map module, use is for redeclaring path (for convenience)
 mod map_builder;
-mod player;
 mod camera;
+mod components;
+mod spawner;
 
 // declare a "local" module called prelude, since this is neighbours w/ main, you don't have to import it again
 // In this prelude module, you are re-exporting some stuff like bracket_lib::prelude::*
@@ -16,26 +17,41 @@ mod prelude {
     pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT / 2;
     pub use crate::map::*;
     pub use crate::map_builder::*;
-    pub use crate::player::*;
     pub use crate::camera::*;
+    pub use legion::*;
+    pub use legion::world::SubWorld;
+    pub use legion::systems::CommandBuffer;
+    pub use crate::components::*;
+    pub use crate::spawner::*;
 }
 
 use prelude::*;
 
+// ecs = entity-component-system
+// entity = stuff in game, no logic, usually just an ID
+// component = properties of an entity e.g. position, health, movement AI. Note: components don't have logic as well! They serve more like descriptions.
+// system = query the entities and components and provide one element of gameplay. All logic resides in system.
 struct State {
-    map: Map,
-    player: Player,
-    camera: Camera
+    ecs: World,
+    resources: Resources, // map and camera are resources
+    systems: Schedule
 }
 
 impl State {
     fn new() -> Self {
+        // Default constructors
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
-        let map_builder = MapBuilder::new(&mut rng);
+        let mut map_builder = MapBuilder::new(&mut rng);
+        spawn_player(&mut ecs, map_builder.player_start); // spawns player in world
+        // Instead of storing map builder in the state, you insert into resources
+        resources.insert(map_builder.map);
+        resources.insert(Camera::new(map_builder.player_start));
         Self {
-            map: map_builder.map,
-            player: Player::new(map_builder.player_start),
-            camera: Camera::new(map_builder.player_start)
+            ecs,
+            resources,
+            systems: build_scheduler()
         }
     }
 }
@@ -47,10 +63,9 @@ impl GameState for State {
         ctx.cls();
         ctx.set_active_console(1);
         ctx.cls();
-        self.player.update(ctx, &self.map, &mut self.camera);
         // render map then player so that the player appears ontop of map.
-        self.map.render(ctx, &self.camera);
-        self.player.render(ctx, &self.camera);
+        // TODO: execute systems
+        // TODO: render draw buffer
     }
 }
 
