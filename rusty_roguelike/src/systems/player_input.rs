@@ -25,9 +25,13 @@ pub fn player_input(
             // <(components, to, include)>::query() returns all entities
             // that have these components
             // This query returns mutable references
+            // query filters can only require that the component exists but not refer to its contents.
+            // You have to use the iterator's filter function instead
+            // you can't query by Player (to avoid filtering) because you need a way to update the position of the player.
             let mut players = <&mut Point>::query()
-                .filter(component::<Player>());
+                .filter(component::<Player>()); // only filter entities with the Point component and the Player TAG component (what does tag mean?)
 
+            // why do for each? there's only 1 player.
             players.iter_mut(ecs).for_each(|pos| {
                 let destination = *pos + delta;
                 if map.can_enter_tile(destination) {

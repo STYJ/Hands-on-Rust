@@ -45,7 +45,7 @@ impl State {
         let mut ecs = World::default();
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
-        let mut map_builder = MapBuilder::new(&mut rng);
+        let map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut ecs, map_builder.player_start); // spawns player in world
         // Instead of storing map builder in the state, you insert into resources
         resources.insert(map_builder.map);
@@ -67,7 +67,7 @@ impl GameState for State {
         ctx.cls();
         self.resources.insert(ctx.key); // this makes the keyboard input available for any system that requests it
         self.systems.execute(&mut self.ecs,&mut self.resources);
-        // TODO: render draw buffer
+        render_draw_buffer(ctx).expect("Render error"); // when all the batches are ready to render, render it
     }
 }
 
