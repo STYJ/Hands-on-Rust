@@ -3,6 +3,7 @@ mod map_builder;
 mod camera;
 mod components;
 mod spawner;
+mod systems;
 
 // declare a "local" module called prelude, since this is neighbours w/ main, you don't have to import it again
 // In this prelude module, you are re-exporting some stuff like bracket_lib::prelude::*
@@ -23,6 +24,7 @@ mod prelude {
     pub use legion::systems::CommandBuffer;
     pub use crate::components::*;
     pub use crate::spawner::*;
+    pub use crate::systems::*;
 }
 
 use prelude::*;
@@ -63,8 +65,8 @@ impl GameState for State {
         ctx.cls();
         ctx.set_active_console(1);
         ctx.cls();
-        // render map then player so that the player appears ontop of map.
-        // TODO: execute systems
+        self.resources.insert(ctx.key); // this makes the keyboard input available for any system that requests it
+        self.systems.execute(&mut self.ecs,&mut self.resources);
         // TODO: render draw buffer
     }
 }
