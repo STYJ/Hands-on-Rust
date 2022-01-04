@@ -8,3 +8,6 @@ pub struct Render {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player; // Player is an empty struct. This is how some components look like, just a "tag" / description.
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Enemy; // Enemy component tag
