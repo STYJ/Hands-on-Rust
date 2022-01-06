@@ -29,7 +29,7 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
                     _ => to_cp437('g'),
                 }
             },
-            MovingRandomly{},
+            MovingRandomly{}, // Super cool how you can just add a new component, the logic in systems and register the system and it all works.
         )
     );
 }

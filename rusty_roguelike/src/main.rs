@@ -4,6 +4,7 @@ mod camera;
 mod components;
 mod spawner;
 mod systems;
+mod turn_state;
 
 // declare a "local" module called prelude, since this is neighbours w/ main, you don't have to import it again
 // In this prelude module, you are re-exporting some stuff like bracket_lib::prelude::*
@@ -25,7 +26,9 @@ mod prelude {
     pub use crate::components::*;
     pub use crate::spawner::*;
     pub use crate::systems::*;
+    pub use crate::turn_state::*;
 }
+
 
 use prelude::*;
 
@@ -35,8 +38,10 @@ use prelude::*;
 // system = query the entities and components and provide one element of gameplay. All logic resides in system.
 struct State {
     ecs: World,
-    resources: Resources, // map and camera are resources
-    systems: Schedule
+    resources: Resources, // map and camera are resources, like additional info that your system might need for their logic
+    input_systems: Schedule,
+    player_systems: Schedule,
+    monster_systems: Schedule,
 }
 
 impl State {
@@ -56,10 +61,13 @@ impl State {
             .for_each(|pos| spawn_monster(&mut ecs,&mut rng, pos));
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
+        resources.insert(TurnState::AwaitingInput); 
         Self {
             ecs,
             resources,
-            systems: build_scheduler()
+            input_systems: build_input_scheduler(),
+            player_systems: build_player_scheduler(),
+            monster_systems: build_monster_scheduler(),
         }
     }
 }
@@ -72,7 +80,12 @@ impl GameState for State {
         ctx.set_active_console(1);
         ctx.cls();
         self.resources.insert(ctx.key); // this makes the keyboard input available for any system that requests it
-        self.systems.execute(&mut self.ecs,&mut self.resources);
+        let current_state = self.resources.get::<TurnState>().unwrap().clone(); // requests for a given type of resource from ECS's resources. Unwrap option to access content, can skip error checking cause it's an enum. Call to clone() duplicates the state so that resource is no longer borrowed.
+        match current_state {
+            TurnState::AwaitingInput => self.input_systems.execute(&mut self.ecs, &mut self.resources),
+            TurnState::PlayerTurn => self.player_systems.execute(&mut self.ecs, &mut self.resources),
+            TurnState::MonsterTurn => self.monster_systems.execute(&mut self.ecs, &mut self.resources),
+        }
         render_draw_buffer(ctx).expect("Render error"); // when all the batches are ready to render, render it
     }
 }
