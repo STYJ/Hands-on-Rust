@@ -4,6 +4,7 @@ mod entity_render;
 mod collisions;
 mod random_move;
 mod end_turn;
+mod movement;
 
 use crate::prelude::*;
 
@@ -22,6 +23,8 @@ pub fn build_input_scheduler() -> Schedule {
 // When it's the player's turn, game doesn't accept input but checks for collisions and renders map and entities and finishes w/ endturn system
 pub fn build_player_scheduler() -> Schedule {
     Schedule::builder()
+        .add_system(movement::movement_system())
+        .flush()
         .add_system(collisions::collisions_system())
         .flush() // try with and without flushing! When collisions are detected, it doesn't take into effect immediately. There's a hidden flush at the end of the systems. Flushing after collision detect ensures that any deleted entities are gone before they are rendered. Flushing also ensures that all systems up to that point has been executed before the next one starts. It's good for taming multi threading issues.
         .add_system(map_render::map_render_system()) // render map
@@ -34,6 +37,8 @@ pub fn build_player_scheduler() -> Schedule {
 pub fn build_monster_scheduler() -> Schedule {
     Schedule::builder()
         .add_system(random_move::random_move_system())
+        .flush()
+        .add_system(movement::movement_system())
         .flush()
         .add_system(collisions::collisions_system())
         .flush()
