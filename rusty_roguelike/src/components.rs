@@ -11,3 +11,6 @@ pub struct Player; // Player is an empty struct. This is how some components loo
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enemy; // Enemy component tag
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MovingRandomly;
