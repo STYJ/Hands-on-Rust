@@ -79,7 +79,11 @@ impl GameState for State {
         ctx.cls();
         ctx.set_active_console(1);
         ctx.cls();
+        ctx.set_active_console(2);
+        ctx.cls();
         self.resources.insert(ctx.key); // this makes the keyboard input available for any system that requests it
+        ctx.set_active_console(0); // the reason you call this first is because different consoles have diff resolutions and the mouse's coordinates is provided in terminal coordinates
+        self.resources.insert(Point::from_tuple(ctx.mouse_pos())); // convert the type of 1 tuple to another.
         let current_state = self.resources.get::<TurnState>().unwrap().clone(); // requests for a given type of resource from ECS's resources. Unwrap option to access content, can skip error checking cause it's an enum. Call to clone() duplicates the state so that resource is no longer borrowed.
         match current_state {
             TurnState::AwaitingInput => self.input_systems.execute(&mut self.ecs, &mut self.resources),
@@ -98,8 +102,10 @@ fn main() -> BError {
         .with_tile_dimensions(32, 32) // size of each character in your font file
         .with_resource_path("resources/") // directory of font
         .with_font("dungeonfont.png", 32, 32) // name of font and dimensions, usually same as tile dimensions
-        .with_simple_console(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png") // Add a console using the specified dimensions and the named tile graphics file
-        .with_simple_console_no_bg(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png") // Add a console with no background so transparency shows through
+        .with_font("terminal8x8.png", 8, 8)    
+        .with_simple_console(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png") // Map layer (0), Add a console using the specified dimensions and the named tile graphics file
+        .with_simple_console_no_bg(DISPLAY_WIDTH, DISPLAY_HEIGHT, "dungeonfont.png") // Entities layer (1), Add a console with no background so transparency shows through
+        .with_simple_console_no_bg(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "terminal8x8.png") // HUD layer (2), it's okay even if the console is double the size of the screen, bracket-lib takes care of the scaling for us.
         .build()?;
     // Note: you are not rendering the entire map at once, so you need to use a camera
 
